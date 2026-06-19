@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="SSync: Selective Synergistic Learning for Video Object-Centric Learning. Slot attention based object discovery and unsupervised object segmentation.">
+  <meta name="keywords" content="Video Object-Centric Learning, Object-Centric Learning, Slot Attention, Object Discovery, Unsupervised Segmentation, SSync, ECCV 2026">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSync: Selective Synergistic Learning for Video Object-Centric Learning</title>
+
+  <meta property="og:title" content="SSync: Selective Synergistic Learning for Video Object-Centric Learning">
+  <meta property="og:description" content="Selective cross-distillation for slot-based video object-centric learning (ECCV 2026).">
+  <meta property="og:image" content="./static/images/fig1.png">
+  <meta property="og:type" content="website">
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.ico">
+
+  <style>
+    .mix-slider-wrap { max-width: 760px; margin: 0 auto; }
+    .mix-endpoints { display: flex; justify-content: space-between; max-width: 760px;
+                     margin: .35rem auto 0; font-weight: 600; color: #555; }
+    .mix-card { position: relative; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0,0,0,.15); background: #000; }
+    .mix-card .mix-base, .mix-card .mix-slot { display: block; width: 100%; height: auto; }
+    .mix-card .mix-slot { position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                          opacity: .5; pointer-events: none; }
+    .mix-group + .mix-group { margin-top: 1rem; }
+    .results-carousel .item { padding: 0 .4rem; }
+    .results-carousel video { border-radius: 6px; width: 100%; display: block; }
+    .result-caption { text-align: center; margin-top: .3rem; color: #555; font-size: .78rem; }
+    /* push pagination dots below the slides so they don't overlap the captions */
+    .results-carousel .slider-pagination { position: relative !important; bottom: auto !important;
+                                           margin-top: 1.4rem; }
+    .perf-table { overflow-x: auto; }
+    .perf-table table {
+      margin: 0 auto; border-collapse: collapse; background: #fff; font-size: .95rem;
+      border-top: 2px solid #363636; border-bottom: 2px solid #363636;
+    }
+    .perf-table th, .perf-table td { padding: .5rem .95rem; text-align: center; vertical-align: middle; border: none; }
+    .perf-table td:first-child, .perf-table th:first-child { text-align: left; }
+    .perf-table thead tr:first-child th[colspan] { border-bottom: 1px solid #c8c8c8; padding-bottom: .2rem;
+                                                   font-variant: small-caps; letter-spacing: .02em; }
+    .perf-table thead tr:last-child th { border-bottom: 1.5px solid #363636; color: #555; font-weight: 600; }
+    .perf-table .gsep { border-left: 1px solid #e6e6e6; }
+    .perf-table tbody tr:hover { background: #f7f7f9; }
+    .perf-table tbody tr.ours { background: #fff4e3; font-weight: 700; }
+    .perf-table tbody tr.ours:hover { background: #ffeccf; }
+    .perf-table tbody tr.ours td:first-child { box-shadow: inset 3px 0 0 #ff8a00; }
+    .perf-table .best { color: #d9480f; font-weight: 700; }
+    .perf-table tbody tr.ours .best { color: #c92a2a; }
+    .perf-table td a.reflink { color: #9a9a9a; font-size: .78rem; margin-left: .3rem; font-weight: 400; }
+    .perf-table td a.reflink:hover { color: #3273dc; }
+    .perf-table .up { color: #2b8a3e; font-weight: 700; }
+    .perf-table .res { display: block; font-size: .72rem; font-weight: 400; color: #8a8a8a;
+                       font-variant: normal; letter-spacing: 0; margin-top: .1rem; }
+    .perf-table td.sub { padding-left: 1.6rem; color: #555; }
+    .perf-caption { color: #555; font-size: .9rem; margin: .4rem 0 1rem; }
+    figure.fig img { width: 100%; border-radius: 8px; }
+    figure.fig figcaption { color: #555; font-size: .9rem; margin-top: .5rem; text-align: justify; }
+  </style>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">SSync: Selective Synergistic Learning<br>for Video Object-Centric Learning</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="https://github.com/wjun0830">WonJun Moon</a><sup>1</sup><sup>&dagger;</sup>,</span>
+            <span class="author-block">Jae-Pil Heo<sup>2</sup><sup>&#9733;</sup></span>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>KAIST,</span>
+            <span class="author-block"><sup>2</sup>Sungkyunkwan University</span>
+          </div>
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>&dagger;</sup>Work done at Sungkyunkwan University&nbsp;&nbsp;</span>
+            <span class="author-block"><sup>&#9733;</sup>Corresponding author</span>
+          </div>
+          <div class="is-size-5 publication-authors" style="margin-top:.5rem;"><b>ECCV 2026</b></div>
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block"><a href="https://arxiv.org/pdf/2606.15527v1" class="external-link button is-normal is-rounded is-dark"><span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span></a></span>
+              <span class="link-block"><a href="https://arxiv.org/abs/2606.15527v1" class="external-link button is-normal is-rounded is-dark"><span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span></a></span>
+              <span class="link-block"><a href="https://github.com/wjun0830/SSync" class="external-link button is-normal is-rounded is-dark"><span class="icon"><i class="fab fa-github"></i></span><span>Code</span></a></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Teaser (compact): movi_c/mixed/009_237.mp4 -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="columns is-centered">
+        <div class="column is-two-fifths">
+          <video id="teaser" autoplay muted loop playsinline style="width:100%; border-radius:8px;">
+            <source src="./static/results/teaser.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <h2 class="subtitle has-text-centered">
+        <b>SSync</b> aligns the encoder&#39;s sharp boundaries with the decoder&#39;s coherent interiors,
+        yielding clean and temporally consistent object decomposition.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Typical video object-centric learning (VOCL) approaches employ slot-based frameworks that rely
+            on reconstruction-driven encoder&ndash;decoder architectures, where learning is mediated by two
+            spatial maps: attention maps from the encoder and object maps from the decoder. As these two
+            distinct maps exhibit different properties, a recent dense alignment strategy attempted to
+            reconcile this discrepancy by enforcing agreement across all spatio-temporal patches. However,
+            this indiscriminate alignment inadvertently propagates the inherent weaknesses of each
+            module&mdash;noisy encoder predictions and blurred decoder boundaries&mdash;while incurring a
+            cost quadratic in the number of spatio-temporal patches.
+          </p>
+          <p>
+            Motivated by this, we propose <b>Selective Synergistic Learning (SSync)</b>. Instead of
+            exhaustive patch-to-patch alignment, SSync prevents error propagation by selectively distilling
+            only the most reliable cues: leveraging the encoder strictly for boundary refinement and the
+            decoder for interior denoising, realized via a pseudo-labeling scheme with linear complexity. To
+            prevent the reinforcement of architectural biases like slot redundancy, we further introduce a
+            transitive pseudo-label merging that consolidates overlapping slots based on spatio-temporal
+            activation consistency. Extensive studies show that SSync improves decomposition quality, serves
+            as a versatile plug-and-play module, and remains exceptionally robust to slot configurations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Method (Figure 1 + Figure 2) ===================== -->
+<section class="section" style="padding-top:0;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">How SSync Works</h2>
+
+        <figure class="fig">
+          <img src="./static/images/fig1.png" alt="SSync overview (paper Figure 1)">
+          <figcaption>
+            <b>Overview.</b> Slot-based VOCL is guided by two spatial maps&mdash;the encoder&#39;s
+            <b>attention map</b> (sharp but noisy) and the decoder&#39;s <b>object map</b> (coherent but
+            blurry). Rather than forcing them to agree everywhere, SSync distills the encoder&#39;s crisp
+            <b>boundaries</b> into the decoder and the decoder&#39;s clean <b>interiors</b> into the encoder,
+            a selective cross-distillation realized by a simple, linear-time pseudo-labeling scheme.
+          </figcaption>
+        </figure>
+
+        <figure class="fig" style="margin-top:2rem;">
+          <img src="./static/images/fig2.png" alt="SSync qualitative mechanism (paper Figure 2)">
+          <figcaption>
+            <b>Selective supervision in practice.</b>
+            Given encoder attention map and decoder object map, a transitive merging step initially
+            consolidates redundant slots that split a single object, stabilizing the pseudo-labels
+            throughout training. Subsequently, boundary regions detected from the attention map and
+            interior regions detected from the object map provide reliable, region-specific supervision.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Quantitative Results ===================== -->
+<section class="section" style="padding-top:0;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Quantitative Results</h2>
+        <p class="content">Object discovery on three VOCL benchmarks (averaged over 3 runs).
+           <b>Best</b> per column in bold.</p>
+        <div class="perf-table">
+          <table>
+            <thead>
+              <tr>
+                <th rowspan="2">Method</th><th rowspan="2">Venue</th>
+                <th colspan="2">MOVi-C<span class="res">336&times;336</span></th>
+                <th colspan="2" class="gsep">MOVi-E<span class="res">336&times;336</span></th>
+                <th colspan="2" class="gsep">YouTube-VIS<span class="res">518&times;518</span></th>
+              </tr>
+              <tr>
+                <th>FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th>
+              </tr>
+            </thead>
+            <tbody>
+    <tr><td>SAVi</td><td>ICLR'22</td><td>22.2</td><td>13.6</td><td class="gsep">42.8</td><td>16.0</td><td class="gsep">&ndash;</td><td>&ndash;</td></tr>
+    <tr><td>STEVE</td><td>NeurIPS'22</td><td>36.1</td><td>26.5</td><td class="gsep">50.6</td><td>26.6</td><td class="gsep">15.0</td><td>19.1</td></tr>
+    <tr><td>VideoSAUR</td><td>NeurIPS'23</td><td>64.8</td><td>38.9</td><td class="gsep">73.9</td><td><span class="best">35.6</span></td><td class="gsep">28.9</td><td>26.3</td></tr>
+    <tr><td>VideoSAURv2</td><td>NeurIPS'23</td><td>&ndash;</td><td>&ndash;</td><td class="gsep">77.1</td><td>34.4</td><td class="gsep">31.2</td><td>29.7</td></tr>
+    <tr><td>SlotContrast</td><td>CVPR'25</td><td>69.3</td><td>32.7</td><td class="gsep">82.9</td><td>29.2</td><td class="gsep">38.0</td><td>33.7</td></tr>
+    <tr><td>SRL <a class="reflink" href="https://arxiv.org/abs/2602.03390" title="paper"><i class="fas fa-file-pdf"></i></a><a class="reflink" href="https://github.com/hynnsk/SRL" title="code"><i class="fab fa-github"></i></a></td><td>ICLR'26</td><td>74.3</td><td>34.5</td><td class="gsep">81.9</td><td>29.3</td><td class="gsep">42.9</td><td>35.6</td></tr>
+    <tr><td>SlotCurri <a class="reflink" href="https://arxiv.org/abs/2603.22758" title="paper"><i class="fas fa-file-pdf"></i></a><a class="reflink" href="https://github.com/wjun0830/SlotCurri" title="code"><i class="fab fa-github"></i></a></td><td>CVPR'26</td><td>77.6</td><td>32.8</td><td class="gsep">83.7</td><td>28.9</td><td class="gsep"><span class="best">44.8</span></td><td>35.5</td></tr>
+    <tr class="ours"><td>SSync (Ours)</td><td>ECCV&#39;26</td><td><span class="best">79.4</span></td><td><span class="best">39.5</span></td><td class="gsep"><span class="best">84.0</span></td><td>34.8</td><td class="gsep">42.6</td><td><span class="best">38.7</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ===== Robustness to Slot Configuration (Table 7) ===== -->
+        <h3 class="title is-4" style="margin-top:2.75rem;">Robustness to Slot Configuration</h3>
+        <p class="perf-caption">On MOVi-C, prior methods degrade sharply as the slot count grows
+           (SlotContrast drops to 61.8 FG-ARI at 15 slots), whereas <b>SSync stays stable</b> thanks to
+           transitive pseudo-label merging. Best per column in bold.</p>
+        <div class="perf-table">
+          <table>
+            <thead>
+              <tr><th rowspan="2">Method</th><th colspan="2">7 slots</th>
+                  <th colspan="2" class="gsep">11 slots</th><th colspan="2" class="gsep">15 slots</th></tr>
+              <tr><th>FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                  <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                  <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>SlotContrast</td><td>74.9</td><td>27.9</td><td class="gsep">69.3</td><td>32.7</td><td class="gsep">61.8</td><td>31.2</td></tr>
+              <tr><td>SRL</td><td>76.5</td><td>31.6</td><td class="gsep">74.3</td><td>34.5</td><td class="gsep">72.8</td><td>31.1</td></tr>
+              <tr class="ours"><td>SSync (Ours)</td><td><span class="best">76.9</span></td><td><span class="best">39.8</span></td><td class="gsep"><span class="best">79.4</span></td><td><span class="best">39.5</span></td><td class="gsep"><span class="best">78.8</span></td><td><span class="best">41.0</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ===== Object Dynamics Prediction / Future Rollout (Table 18) ===== -->
+        <h3 class="title is-4" style="margin-top:2.75rem;">Object Dynamics Prediction (Future Rollout)</h3>
+        <p class="perf-caption">Transferability of the learned slots to downstream <b>future prediction</b>:
+           a frozen object-centric model + SlotFormer (SF) autoregressively predicts future slots. SSync
+           yields the most predictable representations. Best per column in bold.</p>
+        <div class="perf-table">
+          <table>
+            <thead>
+              <tr><th rowspan="2">Method</th><th colspan="2">MOVi-C</th>
+                  <th colspan="2" class="gsep">MOVi-E</th><th colspan="2" class="gsep">YouTube-VIS</th></tr>
+              <tr><th>FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                  <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th>
+                  <th class="gsep">FG-ARI&uarr;</th><th>mBO&uarr;</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Reconstruction + SF</td><td>50.7</td><td>25.9</td><td class="gsep">70.6</td><td>24.3</td><td class="gsep">27.4</td><td>28.9</td></tr>
+              <tr><td>SlotContrast + SF</td><td>63.8</td><td>26.1</td><td class="gsep">70.5</td><td>24.9</td><td class="gsep">29.2</td><td>29.6</td></tr>
+              <tr><td>SRL + SF</td><td>68.9</td><td>27.4</td><td class="gsep">70.4</td><td>24.9</td><td class="gsep"><span class="best">32.2</span></td><td>30.0</td></tr>
+              <tr class="ours"><td>SSync (Ours) + SF</td><td><span class="best">69.1</span></td><td><span class="best">29.0</span></td><td class="gsep"><span class="best">72.1</span></td><td><span class="best">27.1</span></td><td class="gsep">32.1</td><td><span class="best">30.9</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ===== Plug-and-play under RandSF.Q (Table 3) ===== -->
+        <h3 class="title is-4" style="margin-top:2.75rem;">Plug-and-Play under the RandSF.Q Protocol</h3>
+        <p class="perf-caption">As a plug-and-play module, SSync added on top of two RandSF.Q variants
+           (t<sub>sim</sub> from VideoSAUR, SSC from SlotContrast) <span class="up">improves</span> nearly
+           every metric across MOVi-C, MOVi-D, and HQ-YTVIS.</p>
+        <div class="perf-table">
+          <table>
+            <thead>
+              <tr><th rowspan="2">Method</th><th colspan="4">MOVi-C<span class="res">224&times;224</span></th>
+                  <th colspan="4" class="gsep">MOVi-D<span class="res">224&times;224</span></th><th colspan="4" class="gsep">HQ-YTVIS<span class="res">224&times;224</span></th></tr>
+              <tr><th>ARI&uarr;</th><th>FG-ARI&uarr;</th><th>mBO&uarr;</th><th>mIoU&uarr;</th>
+                  <th class="gsep">ARI&uarr;</th><th>FG-ARI&uarr;</th><th>mBO&uarr;</th><th>mIoU&uarr;</th>
+                  <th class="gsep">ARI&uarr;</th><th>FG-ARI&uarr;</th><th>mBO&uarr;</th><th>mIoU&uarr;</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>RandSF.Q (t<sub>sim</sub>)</td><td>70.7</td><td>63.3</td><td>31.1</td><td>28.1</td><td class="gsep">39.3</td><td>70.5</td><td>25.6</td><td>24.3</td><td class="gsep">39.2</td><td>56.3</td><td>37.2</td><td>37.0</td></tr>
+              <tr class="ours"><td class="sub">+ SSync</td><td><span class="up">73.0</span></td><td><span class="up">67.3</span></td><td><span class="up">32.3</span></td><td><span class="up">29.9</span></td><td class="gsep"><span class="up">45.5</span></td><td><span class="up">71.2</span></td><td><span class="up">27.6</span></td><td><span class="up">25.7</span></td><td class="gsep"><span class="up">42.9</span></td><td><span class="up">58.6</span></td><td><span class="up">39.4</span></td><td><span class="up">39.2</span></td></tr>
+              <tr><td>RandSF.Q (SSC)</td><td>52.7</td><td>67.8</td><td>24.2</td><td>22.1</td><td class="gsep">37.3</td><td>85.8</td><td>28.0</td><td>26.8</td><td class="gsep">40.7</td><td>57.2</td><td>38.3</td><td>37.8</td></tr>
+              <tr class="ours"><td class="sub">+ SSync</td><td><span class="up">55.5</span></td><td><span class="up">71.4</span></td><td><span class="up">25.1</span></td><td><span class="up">23.1</span></td><td class="gsep"><span class="up">39.4</span></td><td><span class="up">86.5</span></td><td>27.9</td><td>26.8</td><td class="gsep"><span class="up">48.6</span></td><td><span class="up">57.5</span></td><td><span class="up">42.1</span></td><td><span class="up">41.9</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ===== Image-level Object-Centric Learning (Table 4) ===== -->
+        <h3 class="title is-4" style="margin-top:2.75rem;">Image-level Object-Centric Learning</h3>
+        <p class="perf-caption">Beyond video, SSync also improves image object-centric learning on MOVi-E
+           and real-world COCO 2017. Best in bold.</p>
+        <div class="columns is-centered">
+          <div class="column is-half">
+            <p class="has-text-centered" style="margin-bottom:.4rem;"><b>MOVi-E</b></p>
+            <div class="perf-table">
+              <table>
+                <thead><tr><th>Method</th><th>FG-ARI&uarr;</th></tr></thead>
+                <tbody>
+                  <tr><td>VideoSAUR</td><td>78.4</td></tr>
+                  <tr><td>SOLV</td><td>80.8</td></tr>
+                  <tr><td>SlotContrast</td><td>84.8</td></tr>
+                  <tr><td>SlotCurri</td><td>84.9</td></tr>
+                  <tr class="ours"><td>SSync (Ours)</td><td><span class="best">86.0</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="column is-half">
+            <p class="has-text-centered" style="margin-bottom:.4rem;"><b>COCO 2017</b></p>
+            <div class="perf-table">
+              <table>
+                <thead><tr><th>Method</th><th>FG-ARI&uarr;</th><th>mBO&uarr;</th></tr></thead>
+                <tbody>
+                  <tr><td>Baseline</td><td>40.5</td><td>28.8</td></tr>
+                  <tr><td>SRL</td><td>42.8</td><td>29.4</td></tr>
+                  <tr><td>SlotCurri</td><td>43.4</td><td>28.9</td></tr>
+                  <tr class="ours"><td>SSync (Ours)</td><td><span class="best">47.9</span></td><td><span class="best">33.1</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Interactive Decomposition (per-dataset sliders) ===================== -->
+<section class="section" style="padding-top:0;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Qualitative Results</h2>
+        <div class="content has-text-justified">
+          <p>Each dataset has its own slider&mdash;drag it to blend between the <b>input video</b> and the
+             predicted <b>slot map</b> (each slot shown in a distinct color).</p>
+        </div>
+      </div>
+    </div>
+      <div class="mix-group">
+        <h3 class="title is-5 has-text-centered" style="margin-top:2rem;">MOVi-C</h3>
+        <div class="mix-slider-wrap">
+          <input class="slider is-fullwidth is-large is-info mix-slider" type="range" min="0" max="100" value="50" step="1">
+          <div class="mix-endpoints"><span>Original Video</span><span class="mix-value">50%</span><span>Slot Map</span></div>
+        </div>
+        <div class="columns is-multiline is-centered">
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/000_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/000_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/001_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/001_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/008_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/008_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/010_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/010_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/011_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/011_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/014_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/014_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/021_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/021_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/019_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_c/019_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mix-group">
+        <h3 class="title is-5 has-text-centered" style="margin-top:2rem;">MOVi-E</h3>
+        <div class="mix-slider-wrap">
+          <input class="slider is-fullwidth is-large is-info mix-slider" type="range" min="0" max="100" value="50" step="1">
+          <div class="mix-endpoints"><span>Original Video</span><span class="mix-value">50%</span><span>Slot Map</span></div>
+        </div>
+        <div class="columns is-multiline is-centered">
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/017_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/017_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/004_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/004_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/000_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/000_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/001_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/001_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/002_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/002_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/011_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/011_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/005_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/005_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/006_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/movi_e/006_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mix-group">
+        <h3 class="title is-5 has-text-centered" style="margin-top:2rem;">YouTube-VIS 2021</h3>
+        <div class="mix-slider-wrap">
+          <input class="slider is-fullwidth is-large is-info mix-slider" type="range" min="0" max="100" value="50" step="1">
+          <div class="mix-endpoints"><span>Original Video</span><span class="mix-value">50%</span><span>Slot Map</span></div>
+        </div>
+        <div class="columns is-multiline is-centered">
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/016_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/016_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/017_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/017_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/009_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/009_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/021_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/021_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/026_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/026_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/035_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/035_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/037_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/037_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+          <div class="column is-one-quarter">
+            <div class="mix-card">
+              <video class="mix-base" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/046_video.mp4" type="video/mp4"></video>
+              <video class="mix-slot" autoplay muted loop playsinline>
+                <source src="./static/results/ytvis2021/046_colormap.mp4" type="video/mp4"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+</section>
+
+<!-- ===================== All Results (carousel, 5 across) ===================== -->
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">All Results</h2>
+          <p class="content">Every evaluated clip (input overlaid with predicted slot masks).
+             Use the player controls to pause and scrub through time.</p>
+        </div>
+      </div>
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/000_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/001_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/008_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/010_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/011_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/014_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/021_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_c/019_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-C</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/017_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/004_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/000_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/001_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/002_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/011_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/005_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/movi_e/006_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">MOVi-E</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/016_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/017_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/009_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/021_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/026_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/035_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/037_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+        <div class="item">
+          <video autoplay controls muted loop playsinline>
+            <source src="./static/results/ytvis2021/046_mixed.mp4" type="video/mp4"></video>
+          <p class="result-caption">YouTube-VIS 2021</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@inproceedings{moon2026ssync,
+  title     = {Selective Synergistic Learning for Video Object-Centric Learning},
+  author    = {Moon, WonJun and Heo, Jae-Pil},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}
+
+@inproceedings{moon2026reconstruction,
+  title     = {Reconstruction-Guided Slot Curriculum: Addressing Object Over-Fragmentation in Video Object-Centric Learning},
+  author    = {Moon, WonJun and Seong, Hyun Seok and Heo, Jae-Pil},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2026}
+}
+
+@inproceedings{seong2026synergistic,
+  title     = {From Vicious to Virtuous Cycles: Synergistic Representation Learning for Unsupervised Video Object-Centric Learning},
+  author    = {Seong, Hyun Seok and Moon, WonJun and Heo, Jae-Pil},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2026}
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="https://arxiv.org/pdf/2606.15527v1"><i class="fas fa-file-pdf"></i></a>
+      <a class="icon-link" href="https://github.com/wjun0830/SSync" class="external-link"><i class="fab fa-github"></i></a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>Website template borrowed from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>,
+             licensed under <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
