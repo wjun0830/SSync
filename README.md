@@ -50,7 +50,7 @@ For more details, we refer to the [SlotContrast](https://github.com/martius-lab/
 The datasets should be placed under a common root directory with the following structure:
 
 ```
-├── SlotCurri/
+├── SSync/
 └── dataset/
     ├── ytvis2021_resized/
     ├── movi_c/
@@ -100,9 +100,9 @@ Each clip blends the original input with the predicted slot map (each object in 
     <th align="center">YouTube-VIS 2021</th>
   </tr>
   <tr>
-    <td align="center"><video src="https://wjun0830.github.io/SSync/static/results/movi_c/000_mixed.mp4" autoplay loop muted width="240"></video></td>
-    <td align="center"><video src="https://wjun0830.github.io/SSync/static/results/movi_e/017_mixed.mp4" autoplay loop muted width="240"></video></td>
-    <td align="center"><video src="https://wjun0830.github.io/SSync/static/results/ytvis2021/016_mixed.mp4" autoplay loop muted width="240"></video></td>
+    <td align="center"><img src="docs/movi_c.gif" width="240"></td>
+    <td align="center"><img src="docs/movi_e.gif" width="240"></td>
+    <td align="center"><img src="docs/ytvis2021.gif" width="240"></td>
   </tr>
 </table>
 
