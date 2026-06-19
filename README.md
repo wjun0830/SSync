@@ -12,7 +12,8 @@
   <a href="https://arxiv.org/abs/2606.15527v1"><img src="https://img.shields.io/badge/Paper-ECCV%202026-blue" alt="Paper"></a>
   <a href="https://arxiv.org/abs/2606.15527v1"><img src="https://img.shields.io/badge/arXiv-2606.15527-b31b1b.svg" alt="arXiv"></a>
   <a href="."><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
-  <a href="https://huggingface.co/WJ0830/SlotCurri"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow" alt="Hugging Face Model"></a>
+  <a href="https://huggingface.co/WJ0830/SSync"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow" alt="Hugging Face Model"></a>
+  <a href="https://wjun0830.github.io/SSync"><img src="https://img.shields.io/badge/Project-Page-brightgreen" alt="Project Page"></a>
 </p>
 
 > Official PyTorch implementation of **SSync (Selective Synergistic Learning)**, a selective mutual-distillation framework for video object-centric learning.
