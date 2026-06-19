@@ -9,8 +9,33 @@
 
   <meta property="og:title" content="SSync: Selective Synergistic Learning for Video Object-Centric Learning">
   <meta property="og:description" content="Selective cross-distillation for slot-based video object-centric learning (ECCV 2026).">
-  <meta property="og:image" content="./static/images/fig1.png">
+  <meta property="og:image" content="https://wjun0830.github.io/SSync/static/images/fig1.png">
+  <meta property="og:url" content="https://wjun0830.github.io/SSync">
   <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SSync: Selective Synergistic Learning for Video Object-Centric Learning">
+  <meta name="twitter:description" content="Selective cross-distillation for slot-based video object-centric learning (ECCV 2026).">
+  <meta name="twitter:image" content="https://wjun0830.github.io/SSync/static/images/fig1.png">
+
+  <link rel="canonical" href="https://wjun0830.github.io/SSync">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "name": "SSync: Selective Synergistic Learning for Video Object-Centric Learning",
+    "author": [
+      {"@type": "Person", "name": "WonJun Moon"},
+      {"@type": "Person", "name": "Jae-Pil Heo"}
+    ],
+    "description": "Selective cross-distillation framework for slot-based video object-centric learning, improving decomposition quality with linear-complexity pseudo-labeling.",
+    "url": "https://wjun0830.github.io/SSync",
+    "sameAs": "https://arxiv.org/abs/2606.15527",
+    "publisher": {"@type": "Organization", "name": "ECCV 2026"},
+    "image": "https://wjun0830.github.io/SSync/static/images/fig1.png"
+  }
+  </script>
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
   <link rel="stylesheet" href="./static/css/bulma.min.css">
@@ -249,9 +274,9 @@
 
         <!-- ===== Object Dynamics Prediction / Future Rollout (Table 18) ===== -->
         <h3 class="title is-4" style="margin-top:2.75rem;">Object Dynamics Prediction (Future Rollout)</h3>
-        <p class="perf-caption">Transferability of the learned slots to downstream <b>future prediction</b>:
+        <p class="perf-caption">Transferability of the learned slots to object-centric <b>future prediction</b>:
            a frozen object-centric model + SlotFormer (SF) autoregressively predicts future slots. SSync
-           yields the most predictable representations. Best per column in bold.</p>
+           yields the most predictable object-centric representations. Best per column in bold.</p>
         <div class="perf-table">
           <table>
             <thead>
