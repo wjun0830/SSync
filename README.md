@@ -2,7 +2,7 @@
 <h3 align="center">Selective Synergistic Learning for Video Object-Centric Learning</h3>
 
 <p align="center">
-  <a href="https://github.com/wjun0830">WonJun Moon</a><sup>1</sup> &nbsp;·&nbsp;
+  <a href="https://wjun0830.github.io/">WonJun Moon</a><sup>1</sup> &nbsp;·&nbsp;
   Jae-Pil Heo<sup>2</sup>
   <br>
   <sup>1</sup>KAIST &nbsp;&nbsp; <sup>2</sup>Sungkyunkwan University

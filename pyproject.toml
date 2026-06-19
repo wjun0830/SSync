@@ -3,7 +3,8 @@ name = "SSync"
 version = "0.1.0"
 description = "Selective Synergistic Learning for Video Object-Centric Learning"
 authors = [
-  "Anonymous"
+  "WonJun Moon <wjun0830@gmail.com>",
+  "Jae-Pil Heo"
 ]
 readme = "README.md"
 packages = [{ include = "SSync" }]
