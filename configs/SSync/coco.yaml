@@ -1,0 +1,172 @@
+experiment_group: SSync
+experiment_name: coco
+
+globals:
+  NUM_SLOTS: 7
+  SLOT_DIM: 64
+  DINO_MODEL: vit_small_patch14_dinov2
+  FEAT_DIM: 384
+  NUM_PATCHES: 256
+  NUM_GPUS: 1
+  BATCH_SIZE_PER_GPU: 128
+
+  
+  TOTAL_BATCH_SIZE: "${mul: ${.NUM_GPUS}, ${.BATCH_SIZE_PER_GPU}}"
+  BASE_LR: 0.0001
+
+trainer:
+  max_steps: 100000
+  log_every_n_steps: 2500
+  val_check_interval: 2500
+  gradient_clip_val: 0.05
+  
+
+optimizer:
+  name: Adam
+  lr: 0.0008
+  lr_scheduler:
+    name: exp_decay_with_warmup
+    warmup_steps: 2500
+    decay_steps: ${trainer.max_steps}
+
+model:
+  dif_n_bd: 1
+  dif_n_bd_noise: 1
+  dif_n_nbd: 1
+  merge_iou_threshold: 0.9
+  experiment_group: ${experiment_group}
+  experiment_name: ${experiment_name}
+  max_steps: ${trainer.max_steps}
+  input_type: video
+  visualize: true
+  visualize_every_n_steps: 10000
+  losses:
+    loss_featrec:
+      name: MSELoss
+      pred_dims:
+        - 0
+        - ${globals.FEAT_DIM}
+    loss_ss:
+      name: Img_Slot_Slot_Contrastive_Loss
+      pred_key: processor.state
+      temperature: 0.1
+      batch_contrast: true
+      patch_inputs: false
+      keep_input_dim: true
+    loss_grp2deccls:
+      name: MSECLSLoss
+      pred_key: dec_bd_preds
+      target_key: grp_bd_labels
+      temperature: 1.0
+    loss_dec2grpcls:
+      name: MSECLSLoss
+      pred_key: grp_nbd_preds
+      target_key: dec_nbd_labels
+      temperature: 1.0
+
+  loss_weights:
+    loss_featrec: 1.0
+    loss_ss: 0.5
+    loss_grp2deccls: 1.0
+    loss_dec2grpcls: 1.0
+
+  initializer:
+    name: FixedLearnedInit
+    n_slots: ${globals.NUM_SLOTS}
+    dim: ${globals.SLOT_DIM}
+
+  encoder:
+    backbone:
+      name: TimmExtractor
+      model: ${globals.DINO_MODEL}
+      features:
+      - vit_block12
+      - vit_block_keys12
+      frozen: true
+      pretrained: true
+      model_kwargs:
+        dynamic_img_size: True
+    output_transform:
+      name: networks.two_layer_mlp
+      inp_dim: ${globals.FEAT_DIM}
+      outp_dim: ${globals.SLOT_DIM}
+      hidden_dim: "${mul: ${globals.FEAT_DIM}, 2}"
+      layer_norm: true
+
+  grouper:
+    name: SlotAttention
+    inp_dim: ${globals.SLOT_DIM}
+    slot_dim: ${globals.SLOT_DIM}
+    n_iters: 2
+    use_mlp: true
+
+  latent_processor:
+    first_step_corrector_args:
+      n_iters: 3
+
+  decoder:
+    name: MLPDecoder
+    inp_dim: ${globals.SLOT_DIM}
+    outp_dim: ${globals.FEAT_DIM}
+    hidden_dims: [2048, 2048, 2048]
+    n_patches: ${globals.NUM_PATCHES}
+    
+
+  predictor:
+    name: networks.TransformerEncoder
+    dim: ${globals.SLOT_DIM}
+    n_blocks: 1
+    n_heads: 4
+
+val_metrics:
+  image_ari:
+    name: ImageARI
+    video_input: true
+    ignore_background: false
+    ignore_overlaps: true
+    pred_key: decoder_masks_hard
+    true_key: segmentations
+  image_mbo:
+    name: ImageIoU
+    matching: overlap
+    video_input: true
+    ignore_background: false
+    ignore_overlaps: true
+    pred_key: decoder_masks_hard
+    true_key: segmentations
+
+
+dataset:
+  train_shards: "coco/coco-train-{000000..000462}.tar"
+  val_shards: "coco/coco-validation-{000000..000019}.tar"
+  batch_size: ${globals.BATCH_SIZE_PER_GPU}
+  val_batch_size: 32
+  val_size: 5000
+  num_workers: 2
+  num_val_workers: 2
+  train_pipeline:
+    name: image
+    is_video_dataset: false
+    keys: [image]
+    shuffle_size: 2048
+    transforms:
+      name: coco_train
+      type: image
+      crop_type: short_side_resize_random
+      input_size: 224
+      h_flip_prob: 0.5
+  val_pipeline:
+    #use_chunks: false
+    keys: [image, segmentations]
+    name: image
+    is_video_dataset: false
+    transforms:
+      name: coco_val
+      type: image
+      resize_type: keep_ratio
+      resize_size: 256
+      crop_type: central
+      crop_size: 224
+      # crop_type: central
+      input_size: 224
+      num_classes: 63
