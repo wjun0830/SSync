@@ -1,4 +1,4 @@
-<h1 align="center">SSync</h1>
+<h1 align="center">SSync &nbsp;|&nbsp; ECCV 2026</h1>
 <h3 align="center">Selective Synergistic Learning for Video Object-Centric Learning</h3>
 
 <p align="center">
